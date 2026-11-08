@@ -1,0 +1,9 @@
+app/models/
+app/bin/
+app/venv/
+app/data/
+app/tests/fixtures/
+__pycache__/
+*.pyc
+*.gguf
+*.log

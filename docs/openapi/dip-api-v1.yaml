@@ -1,0 +1,615 @@
+openapi: 3.1.0
+info:
+  title: AI Document Intelligence Platform API
+  version: 1.0.0-draft
+  description: |
+    Independent reference architecture API. Narrative rules, limits and examples:
+    docs/07-api-specification.md. Not an official ISRO specification.
+servers:
+  - url: https://api.dip.example/api/v1
+security:
+  - bearerAuth: []
+tags:
+  - { name: documents }
+  - { name: search }
+  - { name: ai }
+  - { name: analytics }
+  - { name: audit }
+paths:
+  /documents/upload:
+    post:
+      tags: [documents]
+      operationId: initiateUpload
+      summary: Initiate a resumable direct-to-object-store upload
+      x-required-permission: document:upload
+      x-rate-limit-tier: T4
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InitiateUploadRequest' }
+      responses:
+        '201': { description: Upload session created, content: { application/json: { schema: { $ref: '#/components/schemas/UploadSession' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '413': { $ref: '#/components/responses/Problem' }
+        '415': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+        '429': { $ref: '#/components/responses/Problem' }
+  /documents/{documentId}/versions/{versionId}/complete:
+    post:
+      tags: [documents]
+      operationId: completeUpload
+      x-required-permission: document:upload
+      parameters:
+        - { $ref: '#/components/parameters/DocumentId' }
+        - { $ref: '#/components/parameters/VersionId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CompleteUploadRequest' }
+      responses:
+        '202': { description: Accepted for validation, content: { application/json: { schema: { $ref: '#/components/schemas/AcceptedStatus' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '410': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+  /documents/bulk-upload:
+    post:
+      tags: [documents]
+      operationId: bulkUpload
+      x-required-permission: document:upload
+      x-rate-limit-tier: T4
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BulkUploadRequest' }
+      responses:
+        '201': { description: Batch accepted (per-item outcomes), content: { application/json: { schema: { $ref: '#/components/schemas/BulkUploadResponse' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '413': { $ref: '#/components/responses/Problem' }
+        '429': { $ref: '#/components/responses/Problem' }
+  /documents:
+    get:
+      tags: [documents]
+      operationId: listDocuments
+      x-required-permission: document:read
+      parameters:
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+        - { name: department_id, in: query, schema: { type: string, format: uuid } }
+        - { name: lifecycle, in: query, schema: { $ref: '#/components/schemas/Lifecycle' } }
+        - { name: q, in: query, schema: { type: string, maxLength: 200 } }
+      responses:
+        '200': { description: Page of permitted documents, content: { application/json: { schema: { $ref: '#/components/schemas/DocumentPage' } } } }
+  /documents/{documentId}:
+    get:
+      tags: [documents]
+      operationId: getDocument
+      x-required-permission: document:read
+      parameters: [{ $ref: '#/components/parameters/DocumentId' }]
+      responses:
+        '200': { description: Document, content: { application/json: { schema: { $ref: '#/components/schemas/Document' } } } }
+        '404': { $ref: '#/components/responses/Problem' }
+        '410': { $ref: '#/components/responses/Problem' }
+    delete:
+      tags: [documents]
+      operationId: deleteDocument
+      x-required-permission: document:delete
+      parameters:
+        - { $ref: '#/components/parameters/DocumentId' }
+        - { name: version_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '202': { description: Deletion saga started }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+  /documents/{documentId}/status:
+    get:
+      tags: [documents]
+      operationId: getDocumentStatus
+      x-required-permission: document:read
+      parameters:
+        - { $ref: '#/components/parameters/DocumentId' }
+        - { name: version_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Processing status, content: { application/json: { schema: { $ref: '#/components/schemas/Status' } } } }
+        '404': { $ref: '#/components/responses/Problem' }
+  /documents/{documentId}/reprocess:
+    post:
+      tags: [documents]
+      operationId: reprocessDocument
+      x-required-permission: document:reprocess
+      parameters:
+        - { $ref: '#/components/parameters/DocumentId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReprocessRequest' }
+      responses:
+        '202': { description: Reprocessing queued, content: { application/json: { schema: { $ref: '#/components/schemas/AcceptedStatus' } } } }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+  /search:
+    post:
+      tags: [search]
+      operationId: search
+      x-required-permission: search:execute
+      x-rate-limit-tier: T2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SearchRequest' }
+      responses:
+        '200': { description: Authorized hits, content: { application/json: { schema: { $ref: '#/components/schemas/SearchResponse' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '429': { $ref: '#/components/responses/Problem' }
+        '503': { $ref: '#/components/responses/Problem' }
+  /ai/query:
+    post:
+      tags: [ai]
+      operationId: aiQuery
+      x-required-permission: ai:query
+      x-rate-limit-tier: T3
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AiQueryRequest' }
+      responses:
+        '200':
+          description: Validated answer or INSUFFICIENT_EVIDENCE (SSE when Accept is text/event-stream)
+          content:
+            application/json: { schema: { $ref: '#/components/schemas/AiAnswer' } }
+            text/event-stream: { schema: { type: string } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+        '429': { $ref: '#/components/responses/Problem' }
+        '504': { $ref: '#/components/responses/Problem' }
+  /ai/summarize:
+    post:
+      tags: [ai]
+      operationId: aiSummarize
+      x-required-permission: ai:query
+      x-rate-limit-tier: T3
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SummarizeRequest' }
+      responses:
+        '200': { description: Cited summary, content: { application/json: { schema: { $ref: '#/components/schemas/AiAnswer' } } } }
+        '202': { description: Long-running job accepted }
+        '400': { $ref: '#/components/responses/Problem' }
+  /analytics/query:
+    post:
+      tags: [analytics]
+      operationId: analyticsQuery
+      x-required-permission: analytics:query
+      x-rate-limit-tier: T5
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AnalyticsRequest' }
+      responses:
+        '200': { description: Validated, read-only query result, content: { application/json: { schema: { $ref: '#/components/schemas/AnalyticsResult' } } } }
+        '202': { description: Estimated cost exceeds interactive budget; running as batch }
+        '400': { $ref: '#/components/responses/Problem' }
+        '429': { $ref: '#/components/responses/Problem' }
+  /audit/logs:
+    get:
+      tags: [audit]
+      operationId: listAuditLogs
+      x-required-permission: audit:read
+      x-rate-limit-tier: T6
+      parameters:
+        - { name: from, in: query, required: true, schema: { type: string, format: date-time } }
+        - { name: to, in: query, required: true, schema: { type: string, format: date-time } }
+        - { name: actor_id, in: query, schema: { type: string } }
+        - { name: action, in: query, schema: { type: string } }
+        - { name: resource_type, in: query, schema: { type: string } }
+        - { name: outcome, in: query, schema: { type: string, enum: [SUCCESS, DENIED, ERROR] } }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200': { description: Audit page, content: { application/json: { schema: { $ref: '#/components/schemas/AuditPage' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    DocumentId: { name: documentId, in: path, required: true, schema: { type: string, format: uuid } }
+    VersionId: { name: versionId, in: path, required: true, schema: { type: string, format: uuid } }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, format: uuid }
+    Limit: { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+    Cursor: { name: cursor, in: query, schema: { type: string, maxLength: 2048 } }
+  responses:
+    Problem:
+      description: RFC 9457 problem details
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    Problem:
+      type: object
+      required: [type, title, status, code]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        code: { type: string, examples: ['DOC-4001'] }
+        detail: { type: string }
+        instance: { type: string }
+        trace_id: { type: string }
+        errors:
+          type: array
+          items:
+            type: object
+            properties: { field: { type: string }, message: { type: string } }
+    Page:
+      type: object
+      required: [limit, has_more]
+      properties:
+        limit: { type: integer }
+        next_cursor: { type: [string, 'null'] }
+        has_more: { type: boolean }
+    Classification: { type: string, description: 'Placeholder levels pending U-02', enum: [PUBLIC, INTERNAL, RESTRICTED, CONFIDENTIAL] }
+    Lifecycle: { type: string, enum: [DRAFT, ACTIVE, SUPERSEDED, ARCHIVED, DELETED] }
+    State:
+      type: string
+      enum: [UPLOADED, VALIDATING, QUEUED, PROCESSING, EXTRACTED, CHUNKED, EMBEDDING, INDEXING, INDEXED, RETRYING, FAILED, CANCELLED, QUARANTINED]
+    InitiateUploadRequest:
+      type: object
+      additionalProperties: false
+      required: [file_name, size_bytes, declared_mime_type, department_id, classification]
+      properties:
+        file_name: { type: string, minLength: 1, maxLength: 255, pattern: '^[^/\\]+$' }
+        size_bytes: { type: integer, minimum: 1, maximum: 5368709120 }
+        declared_mime_type: { type: string }
+        sha256: { type: string, pattern: '^[a-f0-9]{64}$' }
+        department_id: { type: string, format: uuid }
+        classification: { $ref: '#/components/schemas/Classification' }
+        existing_document_id: { type: [string, 'null'], format: uuid }
+        title: { type: string, maxLength: 500 }
+        metadata:
+          type: object
+          maxProperties: 50
+          additionalProperties: { type: string, maxLength: 1024 }
+    UploadSession:
+      type: object
+      required: [document_id, version_id, version_no, state, upload]
+      properties:
+        document_id: { type: string, format: uuid }
+        version_id: { type: string, format: uuid }
+        version_no: { type: integer }
+        state: { $ref: '#/components/schemas/State' }
+        duplicate_of: { type: [string, 'null'], format: uuid }
+        upload:
+          type: object
+          properties:
+            upload_id: { type: string }
+            part_size_bytes: { type: integer }
+            expires_at: { type: string, format: date-time }
+            parts:
+              type: array
+              items:
+                type: object
+                properties: { part_number: { type: integer }, url: { type: string, format: uri } }
+        links: { type: object, additionalProperties: { type: string } }
+    CompleteUploadRequest:
+      type: object
+      additionalProperties: false
+      required: [parts]
+      properties:
+        parts:
+          type: array
+          minItems: 1
+          maxItems: 10000
+          items:
+            type: object
+            required: [part_number, etag]
+            properties: { part_number: { type: integer, minimum: 1 }, etag: { type: string } }
+    AcceptedStatus:
+      type: object
+      properties:
+        document_id: { type: string, format: uuid }
+        version_id: { type: string, format: uuid }
+        state: { $ref: '#/components/schemas/State' }
+        status_url: { type: string }
+    BulkUploadRequest:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        batch_name: { type: string, maxLength: 200 }
+        defaults:
+          type: object
+          properties:
+            department_id: { type: string, format: uuid }
+            classification: { $ref: '#/components/schemas/Classification' }
+        items:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items:
+            type: object
+            required: [client_ref, file_name, size_bytes, declared_mime_type]
+            properties:
+              client_ref: { type: string, maxLength: 100 }
+              file_name: { type: string, maxLength: 255 }
+              size_bytes: { type: integer, minimum: 1 }
+              declared_mime_type: { type: string }
+              sha256: { type: string, pattern: '^[a-f0-9]{64}$' }
+    BulkUploadResponse:
+      type: object
+      properties:
+        batch_id: { type: string, format: uuid }
+        accepted: { type: integer }
+        rejected: { type: integer }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              client_ref: { type: string }
+              status: { type: string, enum: [ACCEPTED, REJECTED] }
+              document_id: { type: string, format: uuid }
+              version_id: { type: string, format: uuid }
+              upload: { type: object }
+              error: { type: object, properties: { code: { type: string }, detail: { type: string } } }
+    Document:
+      type: object
+      properties:
+        document_id: { type: string, format: uuid }
+        title: { type: string }
+        doc_type: { type: string }
+        department: { type: object, properties: { id: { type: string, format: uuid }, name: { type: string } } }
+        classification: { $ref: '#/components/schemas/Classification' }
+        lifecycle: { $ref: '#/components/schemas/Lifecycle' }
+        legal_hold: { type: boolean }
+        current_version:
+          type: object
+          properties:
+            version_id: { type: string, format: uuid }
+            version_no: { type: integer }
+            state: { $ref: '#/components/schemas/State' }
+            searchable: { type: boolean }
+            page_count: { type: integer }
+            language: { type: string }
+            size_bytes: { type: integer }
+            sha256: { type: string }
+            effective_date: { type: string, format: date }
+        metadata: { type: object, additionalProperties: { type: string } }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    DocumentPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Document' } }
+        page: { $ref: '#/components/schemas/Page' }
+    Status:
+      type: object
+      properties:
+        document_id: { type: string, format: uuid }
+        version_id: { type: string, format: uuid }
+        state: { $ref: '#/components/schemas/State' }
+        progress_percent: { type: integer, minimum: 0, maximum: 100 }
+        stages:
+          type: array
+          items:
+            type: object
+            properties:
+              stage: { type: string, enum: [VALIDATE, EXTRACT, OCR, CLASSIFY, CHUNK, EMBED, INDEX] }
+              state: { type: string, enum: [PENDING, RUNNING, DONE, FAILED] }
+              done_tasks: { type: integer }
+              total_tasks: { type: integer }
+        attempt: { type: integer }
+        failure_reason: { type: [string, 'null'] }
+        estimated_completion: { type: [string, 'null'], format: date-time }
+        updated_at: { type: string, format: date-time }
+    ReprocessRequest:
+      type: object
+      additionalProperties: false
+      required: [from_stage]
+      properties:
+        version_id: { type: string, format: uuid }
+        from_stage: { type: string, enum: [EXTRACT, CHUNK, EMBED, INDEX, AUTO] }
+        reason: { type: string, maxLength: 500 }
+        options:
+          type: object
+          properties:
+            embedding_model: { type: string }
+            chunker_version: { type: [string, 'null'] }
+            priority: { type: string, enum: [P0, P1, P2] }
+    SearchRequest:
+      type: object
+      additionalProperties: false
+      required: [query]
+      properties:
+        query: { type: string, minLength: 1, maxLength: 2000 }
+        mode: { type: string, enum: [HYBRID, KEYWORD, SEMANTIC], default: HYBRID }
+        filters:
+          type: object
+          properties:
+            department_ids: { type: array, items: { type: string, format: uuid } }
+            doc_types: { type: array, items: { type: string } }
+            date_range: { type: object, properties: { from: { type: string, format: date }, to: { type: string, format: date } } }
+            document_ids: { type: array, maxItems: 100, items: { type: string, format: uuid } }
+            tags: { type: array, items: { type: string } }
+        top_k: { type: integer, minimum: 1, maximum: 100, default: 10 }
+        include_history: { type: boolean, default: false }
+        expand_context: { type: boolean, default: true }
+        cursor: { type: [string, 'null'] }
+    SearchHit:
+      type: object
+      properties:
+        chunk_id: { type: string }
+        document_id: { type: string, format: uuid }
+        version_id: { type: string, format: uuid }
+        document_name: { type: string }
+        version_no: { type: integer }
+        current_version: { type: boolean }
+        page_start: { type: integer }
+        page_end: { type: integer }
+        section_path: { type: array, items: { type: string } }
+        snippet: { type: string }
+        score: { type: number }
+        breakdown: { type: object, properties: { bm25_rank: { type: integer }, vector_rank: { type: integer }, rrf: { type: number }, rerank: { type: number } } }
+        quality_flag: { type: [string, 'null'] }
+    SearchResponse:
+      type: object
+      properties:
+        search_id: { type: string }
+        hits: { type: array, items: { $ref: '#/components/schemas/SearchHit' } }
+        rewrite: { type: object }
+        page: { $ref: '#/components/schemas/Page' }
+        took_ms: { type: integer }
+        degraded: { type: boolean }
+        degraded_reasons: { type: array, items: { type: string } }
+    AiQueryRequest:
+      type: object
+      additionalProperties: false
+      required: [question]
+      properties:
+        question: { type: string, minLength: 1, maxLength: 2000 }
+        session_id: { type: [string, 'null'], format: uuid }
+        scope:
+          type: object
+          properties:
+            document_ids: { type: array, items: { type: string, format: uuid } }
+            department_ids: { type: array, items: { type: string, format: uuid } }
+            doc_types: { type: array, items: { type: string } }
+            include_history: { type: boolean }
+        options:
+          type: object
+          properties:
+            max_sources: { type: integer, minimum: 1, maximum: 20 }
+            language: { type: string }
+            route_hint: { type: [string, 'null'], enum: [RAG, SQL, COMPARE, SUMMARIZE, null] }
+            allow_sql: { type: boolean }
+    SummarizeRequest:
+      type: object
+      additionalProperties: false
+      required: [document_ids]
+      properties:
+        document_ids: { type: array, minItems: 1, maxItems: 20, items: { type: string, format: uuid } }
+        version_id: { type: [string, 'null'], format: uuid }
+        style: { type: string, enum: [EXECUTIVE, TECHNICAL, BULLETS] }
+        focus: { type: string, maxLength: 500 }
+        max_words: { type: integer, minimum: 50, maximum: 2000 }
+        page_range: { type: object, properties: { from: { type: integer, minimum: 1 }, to: { type: integer, minimum: 1 } } }
+    Source:
+      type: object
+      required: [ref, document_id, document_name, page_number]
+      properties:
+        ref: { type: string }
+        document_id: { type: string }
+        document_name: { type: string }
+        version_no: { type: integer }
+        page_number: { type: integer }
+        section: { type: string }
+        chunk_id: { type: string }
+        quote: { type: string }
+        superseded: { type: boolean }
+    Claim:
+      type: object
+      properties:
+        claim_id: { type: string }
+        text: { type: string }
+        type: { type: string, enum: [FACT, INTERPRETATION] }
+        source_refs: { type: array, items: { type: string } }
+        verified: { type: boolean }
+    AiAnswer:
+      type: object
+      required: [response_id, route, evidence_status]
+      properties:
+        response_id: { type: string, format: uuid }
+        session_id: { type: string, format: uuid }
+        route: { type: string, enum: [RETRIEVAL, RAG, SQL, SPARK_BATCH, COMPARE, SUMMARIZE, HYBRID] }
+        answer: { type: [string, 'null'] }
+        claims: { type: array, items: { $ref: '#/components/schemas/Claim' } }
+        sources: { type: array, items: { $ref: '#/components/schemas/Source' } }
+        contradictions:
+          type: array
+          items:
+            type: object
+            properties: { topic: { type: string }, source_refs: { type: array, items: { type: string } }, note: { type: string } }
+        limitations: { type: array, items: { type: string } }
+        evidence_status: { type: string, enum: [SUPPORTED, PARTIALLY_SUPPORTED, CONFLICTING, INSUFFICIENT_EVIDENCE] }
+        confidence_band:
+          type: [string, 'null']
+          enum: [HIGH, MEDIUM, LOW, null]
+          description: Evidence-derived band; NOT a calibrated probability.
+        validation: { type: object, properties: { claims_total: { type: integer }, claims_supported: { type: integer }, citations_verified: { type: integer } } }
+        usage: { type: object, properties: { input_tokens: { type: integer }, output_tokens: { type: integer }, latency_ms: { type: integer } } }
+        model: { type: object, properties: { llm: { type: string }, prompt: { type: string } } }
+    AnalyticsRequest:
+      type: object
+      additionalProperties: false
+      required: [mode]
+      properties:
+        mode: { type: string, enum: [NATURAL_LANGUAGE, SQL] }
+        question: { type: string, maxLength: 2000 }
+        sql: { type: string, maxLength: 20000 }
+        execution:
+          type: object
+          properties:
+            max_rows: { type: integer, minimum: 1, maximum: 100000, default: 10000 }
+            timeout_seconds: { type: integer, minimum: 1, maximum: 60, default: 20 }
+            async: { type: boolean, default: false }
+    AnalyticsResult:
+      type: object
+      properties:
+        query_id: { type: string, format: uuid }
+        engine: { type: string, enum: [POSTGRESQL, CLICKHOUSE, SPARK] }
+        sql: { type: string }
+        explanation: { type: string }
+        columns: { type: array, items: { type: object, properties: { name: { type: string }, type: { type: string } } } }
+        rows: { type: array, items: { type: array, items: {} } }
+        row_count: { type: integer }
+        truncated: { type: boolean }
+        cost: { type: object, properties: { estimated_rows_scanned: { type: integer }, estimated_bytes: { type: integer }, within_budget: { type: boolean } } }
+        took_ms: { type: integer }
+        warnings: { type: array, items: { type: string } }
+    AuditEntry:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        occurred_at: { type: string, format: date-time }
+        actor_id: { type: string }
+        actor_type: { type: string, enum: [USER, SERVICE, SYSTEM] }
+        action: { type: string }
+        resource_type: { type: string }
+        resource_id: { type: string }
+        outcome: { type: string, enum: [SUCCESS, DENIED, ERROR] }
+        context: { type: object }
+        source_ip: { type: string }
+        trace_id: { type: string }
+        row_hash: { type: string }
+    AuditPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/AuditEntry' } }
+        page: { $ref: '#/components/schemas/Page' }
+        integrity: { type: object, properties: { chain_verified: { type: boolean }, partition: { type: string } } }

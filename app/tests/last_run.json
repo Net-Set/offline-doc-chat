@@ -1,0 +1,536 @@
+{
+  "ingest": {
+    "datasheet_scan.pdf": {
+      "state": "INDEXED",
+      "pages": 1,
+      "chunks": 1,
+      "seconds": 7.4,
+      "detail": "OCR used on 1 page(s)"
+    },
+    "design_pattern_list.pdf": {
+      "state": "INDEXED",
+      "pages": 2,
+      "chunks": 11,
+      "seconds": 4.2,
+      "detail": "Ready"
+    },
+    "mass_table.pdf": {
+      "state": "INDEXED",
+      "pages": 1,
+      "chunks": 2,
+      "seconds": 1.0,
+      "detail": "Ready"
+    },
+    "rover.docx": {
+      "state": "INDEXED",
+      "pages": 1,
+      "chunks": 1,
+      "seconds": 1.0,
+      "detail": "Ready"
+    },
+    "spec_revc.pdf": {
+      "state": "INDEXED",
+      "pages": 3,
+      "chunks": 3,
+      "seconds": 2.0,
+      "detail": "Ready"
+    }
+  },
+  "results": [
+    {
+      "id": "spec-voltage",
+      "category": "lookup",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 2.4,
+      "answer": "The main bus voltage is 28 V with a tolerance of plus or minus 2 V. [S1]",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "spec-battery-temp",
+      "category": "lookup",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 1.8,
+      "answer": "The maximum battery temperature during charging is 45 degrees Celsius. [S2]",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "spec-tvac",
+      "category": "lookup",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 1.5,
+      "answer": "Thermal vacuum testing shall be performed for 14 days. [S3]",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "spec-injection",
+      "category": "security",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.9,
+      "answer": "120 Ah [S2]",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "spec-capital",
+      "category": "refusal",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 5.1,
+      "answer": "I could not produce an answer that the document text fully supports. The closest passages are listed below - please read them directly.",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "spec-ceo",
+      "category": "refusal",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 4.4,
+      "answer": "I could not produce an answer that the document text fully supports. The closest passages are listed below - please read them directly.",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "spec-pages",
+      "category": "count",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "\"spec_revc.pdf\" has 3 pages. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-count",
+      "category": "count",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "The document lists 10 items under \"Design Pattern\": 1. Two Pointer; 2. Sliding windows; 3. Fast and slow pointer; 4. Merge interval pattern; 5. Binary Search; 6. Depth first search; 7. Dynamic Search; 8. Backtracking; 9. Top K Element; 10. Union find. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-count-typo",
+      "category": "count",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "The document lists 10 items under \"Design Pattern\": 1. Two Pointer; 2. Sliding windows; 3. Fast and slow pointer; 4. Merge interval pattern; 5. Binary Search; 6. Depth first search; 7. Dynamic Search; 8. Backtracking; 9. Top K Element; 10. Union find. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-list",
+      "category": "count",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "The document lists 10 items under \"Design Pattern\": 1. Two Pointer; 2. Sliding windows; 3. Fast and slow pointer; 4. Merge interval pattern; 5. Binary Search; 6. Depth first search; 7. Dynamic Search; 8. Backtracking; 9. Top K Element; 10. Union find. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-sliding",
+      "category": "lookup",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 8.3,
+      "answer": "The sliding window pattern uses two pointers, one left and one right, to keep moving forward and pulling the front of the window ahead. [S3]",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "dp-maps",
+      "category": "lookup",
+      "ok": false,
+      "known_weak": true,
+      "seconds": 1.8,
+      "answer": "The pattern that is like Google Maps is Depth First Search (DFS). [S7]",
+      "failed": [
+        "has any of Backtracking"
+      ],
+      "method": "llm"
+    },
+    {
+      "id": "dp-warranty",
+      "category": "refusal",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 2.4,
+      "answer": "The uploaded documents do not contain enough information to answer that.",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "rover-count",
+      "category": "count",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 17.6,
+      "answer": "I found 7 items that match your question: 1. Lidar scanner [S1]; 2. Stereo camera [S1]; 3. Inertial measurement unit [S1]; 4. Spectrometer [S1]; 5. Ground-penetrating radar [S1]; 6. Weather station [S1]; 7. Sample drill [S1]. (Listed by the local model passage by passage; each name was checked to ap",
+      "failed": [],
+      "method": "extract-and-count"
+    },
+    {
+      "id": "rover-list",
+      "category": "count",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 4.3,
+      "answer": "The instruments carried by the rover are: [S1] Lidar scanner [S1] Stereo camera [S1] Inertial measurement unit [S1] Spectrometer [S1] Ground-penetrating radar [S1] Weather station [S1] Sample drill [S1]",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "rover-duration",
+      "category": "lookup",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 1.7,
+      "answer": "The mission duration is 180 sols. [S1]",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "table-mass",
+      "category": "table",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 3.1,
+      "answer": "The mass of the thermal subsystem is 8.4 kg. [S2]",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "table-power",
+      "category": "table",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 1.6,
+      "answer": "The payload needs 65 watts of power. [S2]",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "table-count",
+      "category": "count",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "The table has 4 rows under \"Subsystem\": 1. Power; 2. Thermal; 3. Structure; 4. Payload. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "scan-temp",
+      "category": "ocr",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 2.4,
+      "answer": "The operating temperature range of the sensor is -20 to 85 degrees Celsius. [S1]",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "scan-voltage",
+      "category": "ocr",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 1.7,
+      "answer": "The supply voltage for the Orion Thermal Sensor is 5 V DC. [S1]",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "scan-warranty",
+      "category": "ocr",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 1.4,
+      "answer": "The warranty period is 3 years. [S1]",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "all-voltage",
+      "category": "multi-doc",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 6.7,
+      "answer": "The main bus voltage is 28 V with a tolerance of plus or minus 2 V. [S1]",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "all-docs",
+      "category": "count",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 1.0,
+      "answer": "6 documents are indexed: M1.pdf; datasheet_scan.pdf; design_pattern_list.pdf; mass_table.pdf; rover.docx; spec_revc.pdf. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "table-trap",
+      "category": "table",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 1.4,
+      "answer": "The payload weighs 15.7 kilograms. [S2]",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "dp-5th",
+      "category": "structure",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "Item 5 of the list \"Design Pattern\" is \"Binary Search\" (page 1). [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-fifth",
+      "category": "structure",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "Item 5 of the list \"Design Pattern\" is \"Binary Search\" (page 1). [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-last",
+      "category": "structure",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "Item 10 of the list \"Design Pattern\" is \"Union find\" (page 2). [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-15th",
+      "category": "structure",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "The list \"Design Pattern\" has only 10 items, so there is no item 15. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-follow-1",
+      "category": "followup",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "The document lists 10 items under \"Design Pattern\": 1. Two Pointer; 2. Sliding windows; 3. Fast and slow pointer; 4. Merge interval pattern; 5. Binary Search; 6. Depth first search; 7. Dynamic Search; 8. Backtracking; 9. Top K Element; 10. Union find. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-follow-2",
+      "category": "followup",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "The document lists 10 items under \"Design Pattern\": 1. Two Pointer; 2. Sliding windows; 3. Fast and slow pointer; 4. Merge interval pattern; 5. Binary Search; 6. Depth first search; 7. Dynamic Search; 8. Backtracking; 9. Top K Element; 10. Union find. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-reverse",
+      "category": "structure",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "The document lists 10 items under \"Design Pattern\" - showing items 1 to 10, in reverse order: 10. Union find; 9. Top K Element; 8. Backtracking; 7. Dynamic Search; 6. Depth first search; 5. Binary Search; 4. Merge interval pattern; 3. Fast and slow pointer; 2. Sliding windows; 1. Two Pointer. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-reverce-typo",
+      "category": "structure",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "The document lists 10 items under \"Design Pattern\" - showing in reverse order: 10. Union find; 9. Top K Element; 8. Backtracking; 7. Dynamic Search; 6. Depth first search; 5. Binary Search; 4. Merge interval pattern; 3. Fast and slow pointer; 2. Sliding windows; 1. Two Pointer. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-first3",
+      "category": "structure",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "The document lists 10 items under \"Design Pattern\" - showing the first 3: 1. Two Pointer; 2. Sliding windows; 3. Fast and slow pointer. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-range",
+      "category": "structure",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "The document lists 10 items under \"Design Pattern\" - showing items 3 to 5: 3. Fast and slow pointer; 4. Merge interval pattern; 5. Binary Search. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-last3",
+      "category": "structure",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "The document lists 10 items under \"Design Pattern\" - showing the last 3: 8. Backtracking; 9. Top K Element; 10. Union find. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-odd",
+      "category": "structure",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "The document lists 10 items under \"Design Pattern\" - showing only the odd-numbered items: 1. Two Pointer; 3. Fast and slow pointer; 5. Binary Search; 7. Dynamic Search; 9. Top K Element. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-even",
+      "category": "structure",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "The document lists 10 items under \"Design Pattern\" - showing only the even-numbered items: 2. Sliding windows; 4. Merge interval pattern; 6. Depth first search; 8. Backtracking; 10. Union find. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-alpha",
+      "category": "structure",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "The document lists 10 items under \"Design Pattern\" - showing sorted alphabetically: 8. Backtracking; 5. Binary Search; 6. Depth first search; 7. Dynamic Search; 3. Fast and slow pointer; 4. Merge interval pattern; 2. Sliding windows; 9. Top K Element; 1. Two Pointer; 10. Union find. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-startsB",
+      "category": "structure",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "The document lists 10 items under \"Design Pattern\" - showing names starting with \"B\": 5. Binary Search; 8. Backtracking. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-every3",
+      "category": "structure",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.1,
+      "answer": "The document lists 10 items under \"Design Pattern\" - showing every 3th item: 1. Two Pointer; 4. Merge interval pattern; 7. Dynamic Search; 10. Union find. [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-pointer-llm",
+      "category": "structure",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 1.6,
+      "answer": "The document lists 10 items under \"Design Pattern\" - items that match your request (chosen by the local model from the exact list, nothing added): 1. Two Pointer; 3. Fast and slow pointer. [S1]",
+      "failed": [],
+      "method": "structure+model"
+    },
+    {
+      "id": "dp-7th-3th",
+      "category": "structure",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.0,
+      "answer": "From the list \"Design Pattern\": item 7 is \"Dynamic Search\" (page 2); item 3 is \"Fast and slow pointer\" (page 1). [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-ordinals-words",
+      "category": "structure",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 0.0,
+      "answer": "From the list \"Design Pattern\": item 2 is \"Sliding windows\" (page 1); item 9 is \"Top K Element\" (page 2). [S1]",
+      "failed": [],
+      "method": "structure"
+    },
+    {
+      "id": "dp-how-long-last",
+      "category": "lookup",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 1.6,
+      "answer": "Thermal vacuum testing shall be performed for 14 days. [S3]",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "dp-merge-example",
+      "category": "lookup",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 14.6,
+      "answer": "The real-life example used for the merge interval pattern is a calendar. [S5] \"In a calendar, two work periods continue simultaneously. [S5]",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "dp-sorted",
+      "category": "lookup",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 2.1,
+      "answer": "The pattern that works only on sorted data is Binary Search. [S6]",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "dp-othername",
+      "category": "lookup",
+      "ok": true,
+      "known_weak": false,
+      "seconds": 15.1,
+      "answer": "The fast and slow pointer pattern is also known as rabbit and tortoise. [S5]",
+      "failed": [],
+      "method": "llm"
+    },
+    {
+      "id": "dp-students",
+      "category": "lookup",
+      "ok": false,
+      "known_weak": true,
+      "seconds": 39.4,
+      "answer": "The question asks for the number of students in the Top K Element example. [S11] Therefore, the number of students is 5. [S11]",
+      "failed": [
+        "has 100"
+      ],
+      "method": "llm"
+    }
+  ],
+  "overall": 1.0
+}

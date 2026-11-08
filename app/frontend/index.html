@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Local Document Chat</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --ink:#1b1f24; --muted:#667085; --line:#e4e7ec; --accent:#2457d6;
+  --accent-ink:#ffffff; --ok:#12805c; --warn:#a15c07; --bad:#b42318; --chip:#eef2ff; --user:#eaf0ff;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#101216; --panel:#171a20; --ink:#e8eaee; --muted:#9aa3b2; --line:#272b33; --accent:#6b93ff;
+    --accent-ink:#0b1020; --ok:#4cc79b; --warn:#e3a54b; --bad:#ff7b72; --chip:#1d2433; --user:#1c2640; }
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,Segoe UI,Roboto,sans-serif;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+header h1{font-size:16px;margin:0;font-weight:650}
+.pill{font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.pill.ok{color:var(--ok);border-color:var(--ok)} .pill.bad{color:var(--bad);border-color:var(--bad)}
+.spacer{flex:1}
+main{flex:1;display:grid;grid-template-columns:320px 1fr;min-height:0}
+aside{border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;min-height:0}
+.drop{margin:12px;border:2px dashed var(--line);border-radius:10px;padding:16px;text-align:center;color:var(--muted);cursor:pointer;transition:.15s}
+.drop.over{border-color:var(--accent);background:var(--chip);color:var(--ink)}
+.drop b{color:var(--ink)}
+.docs{flex:1;overflow:auto;padding:0 12px 12px}
+.doc{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px;background:var(--bg)}
+.doc .top{display:flex;gap:8px;align-items:flex-start}
+.doc .name{flex:1;font-weight:600;word-break:break-word;font-size:14px}
+.doc .meta{font-size:12px;color:var(--muted);margin-top:2px}
+.bar{height:4px;background:var(--line);border-radius:4px;margin-top:8px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.state{font-size:11px;font-weight:650;letter-spacing:.03em}
+.state.INDEXED{color:var(--ok)} .state.FAILED{color:var(--bad)} .state.work{color:var(--warn)}
+button{font:inherit;cursor:pointer}
+.icon{border:0;background:none;color:var(--muted);padding:2px 6px;border-radius:6px}
+.icon:hover{background:var(--line);color:var(--ink)}
+.scope{font-size:12px;color:var(--muted);padding:0 14px 8px}
+section.chat{display:flex;flex-direction:column;min-height:0}
+#log{flex:1;overflow:auto;padding:20px 0}
+.wrap{max-width:820px;margin:0 auto;padding:0 16px}
+.msg{margin:0 0 18px}
+.msg .who{font-size:12px;color:var(--muted);margin-bottom:4px}
+.bubble{padding:10px 14px;border-radius:12px;white-space:pre-wrap;word-break:break-word}
+.msg.user .bubble{background:var(--user)}
+.msg.bot .bubble{background:var(--panel);border:1px solid var(--line)}
+.cite{display:inline-block;font-size:11px;font-weight:700;padding:0 5px;border-radius:5px;background:var(--chip);color:var(--accent);cursor:pointer;margin:0 1px;vertical-align:1px}
+.srcs{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.src{border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:13px}
+.src summary{cursor:pointer;padding:6px 10px;list-style:none;display:flex;gap:8px;align-items:center}
+.src summary::-webkit-details-marker{display:none}
+.src .q{padding:8px 10px;border-top:1px solid var(--line);color:var(--muted);white-space:pre-wrap;font-size:12.5px;max-height:200px;overflow:auto}
+.badge{font-size:11px;padding:1px 7px;border-radius:99px;border:1px solid var(--line)}
+.badge.SUPPORTED{color:var(--ok);border-color:var(--ok)}
+.badge.PARTIALLY_SUPPORTED{color:var(--warn);border-color:var(--warn)}
+.badge.INSUFFICIENT_EVIDENCE{color:var(--muted)}
+.foot{font-size:11.5px;color:var(--muted);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.composer{border-top:1px solid var(--line);background:var(--panel);padding:12px 0}
+.composer .wrap{display:flex;gap:8px}
+textarea{flex:1;resize:none;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;max-height:140px}
+textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.send{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:0 18px;font-weight:650}
+.send:disabled{opacity:.5;cursor:default}
+.empty{color:var(--muted);text-align:center;margin-top:12vh}
+.empty h2{color:var(--ink);font-size:20px;margin:0 0 6px}
+.note{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
+@media (max-width:760px){ main{grid-template-columns:1fr} aside{max-height:38vh;border-right:0;border-bottom:1px solid var(--line)} }
+</style>
+</head>
+<body>
+<header>
+  <h1>Local Document Chat</h1>
+  <span class="pill" id="pLlm">chat model …</span>
+  <span class="pill" id="pEmb">embedding model …</span>
+  <span class="spacer"></span>
+  <span class="pill">100% offline · runs on this PC</span>
+  <button class="icon" id="newChat" title="Start a new conversation">New chat</button>
+</header>
+<main>
+  <aside>
+    <div class="drop" id="drop"><b>Drop files here</b> or click to upload<br><small>PDF (incl. scanned), DOCX, images, TXT, MD, CSV · up to 50 MB</small></div>
+    <input type="file" id="file" multiple accept=".pdf,.docx,.txt,.md,.csv,.png,.jpg,.jpeg" hidden>
+    <div class="scope" id="scope">Asking across all documents</div>
+    <div class="docs" id="docs"></div>
+  </aside>
+  <section class="chat">
+    <div id="log"><div class="wrap" id="msgs"></div></div>
+    <div class="composer"><div class="wrap">
+      <textarea id="q" rows="1" placeholder="Ask a question about your documents…"></textarea>
+      <button class="send" id="send">Send</button>
+    </div>
+    <div class="note">Answers come only from your uploaded documents and cite the page. A small local model can still make mistakes — check the sources.</div></div>
+  </section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let sessionId = localStorage.getItem('sid') || null;
+let docs = [], selected = new Set(), busy = false;
+
+async function health(){
+  try{
+    const h = await (await fetch('/api/health')).json();
+    $('#pLlm').textContent = 'chat model ' + (h.llm ? 'ready' : 'starting…'); $('#pLlm').className = 'pill ' + (h.llm?'ok':'bad');
+    $('#pEmb').textContent = 'embedding ' + (h.embedding ? 'ready' : 'starting…'); $('#pEmb').className = 'pill ' + (h.embedding?'ok':'bad');
+  }catch(e){ $('#pLlm').textContent='server offline'; $('#pLlm').className='pill bad'; }
+}
+
+function fmtSize(n){ return n>1048576 ? (n/1048576).toFixed(1)+' MB' : Math.max(1,Math.round(n/1024))+' KB'; }
+function renderDocs(){
+  const el = $('#docs');
+  if(!docs.length){ el.innerHTML = '<div class="meta" style="padding:8px">No documents yet.</div>'; }
+  else el.innerHTML = docs.map(d => {
+    const work = !['INDEXED','FAILED'].includes(d.state);
+    const ready = d.state==='INDEXED';
+    return `<div class="doc">
+      <div class="top">
+        <input type="checkbox" ${selected.has(d.id)?'checked':''} ${ready?'':'disabled'} data-sel="${d.id}" title="Limit questions to this document">
+        <div class="name">${esc(d.name)}</div>
+        <button class="icon" data-del="${d.id}" title="Remove">✕</button>
+      </div>
+      <div class="meta"><span class="state ${work?'work':d.state}">${d.state}</span> · ${fmtSize(d.size)}${d.pages?` · ${d.pages} pages`:''}${d.chunks?` · ${d.chunks} passages`:''}</div>
+      ${d.detail && d.state!=='INDEXED' || (d.detail && d.detail!=='Ready') ? `<div class="meta">${esc(d.detail)}</div>`:''}
+      ${work?`<div class="bar"><i style="width:${d.progress||3}%"></i></div>`:''}
+    </div>`; }).join('');
+  $('#scope').textContent = selected.size ? `Asking only ${selected.size} selected document${selected.size>1?'s':''}` : 'Asking across all documents';
+}
+async function loadDocs(){
+  try{ docs = await (await fetch('/api/documents')).json(); selected = new Set([...selected].filter(id => docs.some(d=>d.id===id))); renderDocs(); }catch(e){}
+}
+$('#docs').addEventListener('click', async e => {
+  const del = e.target.closest('[data-del]');
+  if(del){ if(confirm('Remove this document and its indexed passages?')){ await fetch('/api/documents/'+del.dataset.del,{method:'DELETE'}); loadDocs(); } }
+});
+$('#docs').addEventListener('change', e => {
+  const s = e.target.dataset.sel; if(!s) return; e.target.checked ? selected.add(s) : selected.delete(s); renderDocs();
+});
+
+async function upload(files){
+  if(!files.length) return;
+  const fd = new FormData(); [...files].forEach(f => fd.append('files', f));
+  const res = await (await fetch('/api/documents',{method:'POST',body:fd})).json();
+  const errs = res.filter(r=>r.error).map(r=>r.name+': '+r.error);
+  if(errs.length) alert(errs.join('\n'));
+  loadDocs();
+}
+const drop = $('#drop'), fileIn = $('#file');
+drop.onclick = () => fileIn.click();
+fileIn.onchange = () => { upload(fileIn.files); fileIn.value=''; };
+['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => upload(e.dataTransfer.files));
+
+function empty(){ $('#msgs').innerHTML = `<div class="empty"><h2>Chat with your documents</h2>Upload a file on the left, wait for <b>INDEXED</b>, then ask a question.<br>Everything — models, search and storage — runs locally on this computer.</div>`; }
+function citeify(text){ return esc(text).replace(/\[S(\d+)\]/g, (m,n) => `<span class="cite" data-ref="${n}">S${n}</span>`)
+  .replace(/\[unverified\]/g, '<span class="cite" style="color:var(--warn)" title="No retrieved passage supports this statement">unverified</span>'); }
+
+function addMsg(role, html){
+  const m = document.createElement('div'); m.className = 'msg ' + (role==='user'?'user':'bot');
+  m.innerHTML = `<div class="who">${role==='user'?'You':'Assistant'}</div><div class="bubble">${html}</div>`;
+  if($('#msgs .empty')) $('#msgs').innerHTML = '';
+  $('#msgs').appendChild(m); $('#log').scrollTop = $('#log').scrollHeight; return m;
+}
+function renderFinal(m, f){
+  const b = m.querySelector('.bubble'); b.innerHTML = citeify(f.answer || '');
+  let html = '';
+  if(f.sources && f.sources.length){
+    html += '<div class="srcs">' + f.sources.map(s => `<details class="src" id="${m.id||''}${s.ref}">
+      <summary><span class="cite">${s.ref}</span><b>${esc(s.document)}</b> · ${esc(s.page_label || ('page '+s.page))}${s.section && s.section!=='Document outline'?' · '+esc(s.section):''}</summary>
+      <div class="q">${esc(s.quote)}</div></details>`).join('') + '</div>';
+  }
+  const v = f.validation || {}, t = f.timing || {};
+  const warns = [];
+  if(v.unverified_numbers && v.unverified_numbers.length) warns.push('numbers not found in the documents: ' + v.unverified_numbers.join(', '));
+  if(v.unsupported && v.evidence_status!=='INSUFFICIENT_EVIDENCE') warns.push(v.unsupported + ' unsupported statement(s) were removed from the answer');
+  if(v.attempt>1 && v.evidence_status!=='INSUFFICIENT_EVIDENCE') warns.push('answered again automatically after a check (try '+v.attempt+')');
+  if(v.reason) warns.push(v.reason);
+  const how = {structure:'exact · from document structure/metadata', 'structure+model':'items picked by the model from the exact list', extractive:'quoted word for word from the document (the model could not compose an answer)', 'extract-and-count':'listed by the model, counted by code'}[v.method];
+  html += `<div class="foot"><span class="badge ${f.evidence_status}">${(f.evidence_status||'').replace('_',' ')}</span>`
+    + (how ? `<span>${how}</span>` : '')
+    + (t.total_s ? `<span>${t.total_s}s total · first token ${t.first_token_s}s</span>` : '')
+    + (warns.length ? `<span style="color:var(--warn)">⚠ ${esc(warns.join(' · '))}</span>` : '') + '</div>';
+  const holder = document.createElement('div'); holder.innerHTML = html; m.appendChild(holder);
+  m.querySelectorAll('.cite[data-ref]').forEach(c => c.onclick = () => { const d = m.querySelector('.src summary .cite') && [...m.querySelectorAll('.src')].find(x => x.querySelector('summary .cite').textContent==='S'+c.dataset.ref); if(d){ d.open = !d.open; d.scrollIntoView({block:'nearest'}); } });
+  $('#log').scrollTop = $('#log').scrollHeight;
+}
+
+async function ask(){
+  const input = $('#q'), question = input.value.trim();
+  if(!question || busy) return;
+  busy = true; $('#send').disabled = true; input.value = ''; input.style.height='auto';
+  addMsg('user', esc(question));
+  const bot = addMsg('bot', '<span style="color:var(--muted)">Searching your documents…</span>');
+  const bubble = bot.querySelector('.bubble'); let acc = '';
+  try{
+    const res = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({question, session_id: sessionId, doc_ids: selected.size ? [...selected] : null})});
+    if(!res.ok){ bubble.textContent = 'Error: ' + (await res.text()); return; }
+    const reader = res.body.getReader(), dec = new TextDecoder(); let buf = '';
+    while(true){
+      const {value, done} = await reader.read(); if(done) break;
+      buf += dec.decode(value, {stream:true});
+      let i; while((i = buf.indexOf('\n\n')) >= 0){
+        const block = buf.slice(0,i); buf = buf.slice(i+2);
+        const ev = (block.match(/^event: (.*)$/m)||[])[1], data = JSON.parse((block.match(/^data: (.*)$/m)||[,'{}'])[1]);
+        if(ev==='session'){ sessionId = data.session_id; localStorage.setItem('sid', sessionId); }
+        else if(ev==='retrieval'){ bubble.innerHTML = `<span style="color:var(--muted)">Found ${data.hits} passage(s) in ${data.seconds}s · generating on CPU…</span>`; }
+        else if(ev==='status'){ bubble.innerHTML = `<span style="color:var(--muted)">${esc(data.message)}</span>`; }
+        else if(ev==='progress'){ bubble.innerHTML = `<span style="color:var(--muted)">${esc(data.what)}: ${data.done+1} of ${data.total}… (counting is done in code, the model only lists items)</span>`; }
+        else if(ev==='token'){ acc += data.t; bubble.innerHTML = citeify(acc); $('#log').scrollTop = $('#log').scrollHeight; }
+        else if(ev==='final'){ renderFinal(bot, data); }
+        else if(ev==='error'){ bubble.innerHTML = '<span style="color:var(--bad)">' + esc(data.message) + '</span>'; }
+      }
+    }
+  }catch(e){ bubble.innerHTML = '<span style="color:var(--bad)">' + esc(String(e)) + '</span>'; }
+  finally{ busy = false; $('#send').disabled = false; input.focus(); }
+}
+$('#send').onclick = ask;
+$('#q').addEventListener('keydown', e => { if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); ask(); } });
+$('#q').addEventListener('input', e => { e.target.style.height='auto'; e.target.style.height = Math.min(140, e.target.scrollHeight)+'px'; });
+$('#newChat').onclick = () => { sessionId = null; localStorage.removeItem('sid'); empty(); };
+
+async function restore(){
+  if(!sessionId){ empty(); return; }
+  try{
+    const h = await (await fetch('/api/chat/'+sessionId)).json();
+    if(!h.length){ empty(); return; }
+    h.forEach(m => { const el = addMsg(m.role==='user'?'user':'bot', m.role==='user'?esc(m.content):citeify(m.content)); if(m.role!=='user') renderFinal(el, {answer:m.content, sources:(m.meta||{}).sources, evidence_status:(m.meta||{}).evidence_status, validation:(m.meta||{}).validation, timing:(m.meta||{}).timing}); });
+  }catch(e){ empty(); }
+}
+health(); loadDocs(); restore();
+setInterval(health, 5000);
+setInterval(() => { if(docs.some(d => !['INDEXED','FAILED'].includes(d.state)) || !docs.length) loadDocs(); }, 1500);
+</script>
+</body>
+</html>
